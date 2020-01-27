@@ -6,5 +6,6 @@
   ;; uncomment to launch tests in a headless environment
   ;; you will have to figure out the path to chrome on your system
   ;; :launch-js ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" "--headless" "--disable-gpu" "--repl" :open-url]
-  }
+
+  :target-dir "resources"}
 {:main no-boosts.test-runner}

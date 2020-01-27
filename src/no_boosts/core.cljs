@@ -2,7 +2,10 @@
   (:require
    [goog.dom :as gdom]
    [ajax.core :refer [GET POST]]
-   [clojure.string]))
+   [clojure.string]
+   [enfocus.core :as ef]
+   [enfocus.events :as ev])
+  (:require-macros [enfocus.macros :as em]))
 
 ; defonce
 (def app-state (atom {:instance ""
@@ -12,6 +15,10 @@
 
 (def cors-proxy-domain "cors-anywhere.glitch.me")
 (def cors-proxy-url (clojure.string/join (list "https://" cors-proxy-domain "/")))
+
+; templates
+(defn toot [text user date]
+  (ef/html [:div '([:span user {:class "username"}] [:span date {:class "date"}] [:span text {:class "text"}]) {:class "toot"}]))
 
 (defn make-cors-url [url]
   (clojure.string/join (list cors-proxy-url url)))
@@ -57,12 +64,16 @@
          return-second-arg (nth (re-find #"https://([^/]+)" url) 1))
   (get-user-info url #(swap! app-state update-in [:first] return-second-arg (get %1 "first"))))
 
-;; specify reload hook with ^;after-load metadata
 (defn ^:after-load on-reload []
-  ;; optionally touch your app-state to force rerendering depending on
-  ;; your application
-  ;; (swap! app-state update-in [:__figwheel_counter] inc)
-)
+  (println "reloaded"))
 
-(handle-form-url "https://mastodon.social/@admin")
-(add-watch app-state :watch #(println %4))
+(em/defaction setup []
+  "#instance" (ev/listen :submit #(let [values (ef/from "#instance" (ef/read-form))]
+                                    (.preventDefault %1) 
+                                    (handle-form-url (:url values)))))
+
+(if (= (.-readyState js/document) "loading")
+  (.addEventListener js/document "DOMContentLoaded" setup)
+  (setup))
+
+; (add-watch app-state :watch #(println %4))
