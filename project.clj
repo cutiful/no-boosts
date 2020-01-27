@@ -8,7 +8,8 @@
 
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [org.clojure/clojurescript "1.10.520"]
-                 [cljs-ajax "0.8.0"]]
+                 [cljs-ajax "0.8.0"]
+                 [enfocus "2.1.0"]]
 
   :source-paths ["src"]
 
