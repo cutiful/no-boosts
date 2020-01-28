@@ -1,13 +1,11 @@
 (ns ^:figwheel-hooks no-boosts.core
   (:require
-   [goog.dom :as gdom]
    [ajax.core :refer [GET POST]]
    [clojure.string]
    [enfocus.core :as ef]
    [enfocus.events :as ev])
   (:require-macros [enfocus.macros :as em]))
 
-; defonce
 (def app-state (atom {:instance ""
                       :first ""
                       :next ""
@@ -16,19 +14,32 @@
 (def cors-proxy-domain "cors-anywhere.glitch.me")
 (def cors-proxy-url (clojure.string/join (list "https://" cors-proxy-domain "/")))
 
-; templates
-(defn toot [text user date]
-  (ef/html [:div '([:span user {:class "username"}] [:span date {:class "date"}] [:span text {:class "text"}]) {:class "toot"}]))
-
+; pure
 (defn make-cors-url [url]
   (clojure.string/join (list cors-proxy-url url)))
 
 (defn return-second-arg [a b]
   b)
 
-(defn get-app-element []
-  (gdom/getElement "app"))
+; dom
+(defn toot [text user date link]
+  (let [el (ef/html [:div.toot [:span.username user] [:a {:href link} [:span.date date]] [:span.text]])]
+    (set! (.-innerHTML (aget (.-children el) 2)) text)
+    el))
 
+(em/defaction add-toot [toot-data]
+  "#toots" (ef/append (let [obj (get toot-data "object")]
+                        (toot
+                          (get obj "content")
+                          (get obj "attributedTo")
+                          (get obj "published")
+                          (get obj "url")))))
+
+(defn display-page [page]
+  (doseq [toot-data (get page "orderedItems")]
+    (add-toot toot-data)))
+
+; ajax
 (defn get-user-outbox [url handler]
   (GET url {:response-format :json
             :handler #(handler %1)}))
@@ -58,15 +69,17 @@
 (defn handle-form-url [url]
   (add-watch app-state :firstwatch #(if (not= (:first %3) (:first %4))
                                       (do
-                                        (get-page (:first %4) println) ; FIXME
+                                        (get-page (:first %4) display-page) ; FIXME
                                         (remove-watch app-state :firstwatch))))
   (swap! app-state update-in [:instance]
          return-second-arg (nth (re-find #"https://([^/]+)" url) 1))
   (get-user-info url #(swap! app-state update-in [:first] return-second-arg (get %1 "first"))))
 
+; misc
 (defn ^:after-load on-reload []
   (println "reloaded"))
 
+; main
 (em/defaction setup []
   "#instance" (ev/listen :submit #(let [values (ef/from "#instance" (ef/read-form))]
                                     (.preventDefault %1) 
