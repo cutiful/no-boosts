@@ -1,9 +1,11 @@
 (ns ^:figwheel-hooks no-boosts.core
+  (:import goog.html.sanitizer.HtmlSanitizer)
   (:require
-   [ajax.core :refer [GET POST]]
-   [clojure.string]
-   [enfocus.core :as ef]
-   [enfocus.events :as ev])
+    [goog.dom :as gdom]
+    [ajax.core :refer [GET POST]]
+    [clojure.string]
+    [enfocus.core :as ef]
+    [enfocus.events :as ev])
   (:require-macros [enfocus.macros :as em]))
 
 (def app-state (atom {:instance ""
@@ -22,10 +24,14 @@
   b)
 
 ; dom
+(def sanitizer (HtmlSanitizer.))
+
 (defn toot [text user date link]
-  (let [el (ef/html [:div.toot [:span.username user] [:a {:href link} [:span.date date]] [:span.text]])]
-    (set! (.-innerHTML (aget (.-children el) 2)) text)
-    el))
+  (gdom/createDom gdom/TagName.DIV "toot"
+                  (gdom/createDom gdom/TagName.SPAN "username" user)
+                  (gdom/createDom gdom/TagName.A (clj->js {:href link :target "_blank" :rel "noopener"})
+                                  (gdom/createDom gdom/TagName.SPAN "date" date))
+                  (gdom/safeHtmlToNode (.sanitize sanitizer text))))
 
 (em/defaction add-toot [toot-data]
   "#toots" (ef/append (let [obj (get toot-data "object")]
