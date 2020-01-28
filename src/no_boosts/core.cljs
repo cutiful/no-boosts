@@ -79,13 +79,11 @@
         :handler #(get-page-handler %1 handler)}))
 
 (defn handle-form-url [url]
-  (add-watch app-state :firstwatch #(if (not= (:first %3) (:first %4))
-                                      (do
-                                        (get-page (:first %4) display-page)
-                                        (remove-watch app-state :firstwatch))))
   (swap! app-state update-in [:instance]
          return-second-arg (nth (re-find #"https://([^/]+)" url) 1))
-  (get-user-info url #(swap! app-state update-in [:first] return-second-arg (get %1 "first"))))
+  (get-user-info url #(do
+                        (swap! app-state update-in [:first] return-second-arg (get %1 "first"))
+                        (get-page (get %1 "first") display-page))))
 
 ; misc
 (defn ^:after-load on-reload []
