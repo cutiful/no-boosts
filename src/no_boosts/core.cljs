@@ -8,10 +8,11 @@
     [enfocus.events :as ev])
   (:require-macros [enfocus.macros :as em]))
 
-(def app-state (atom {:instance ""
-                      :first ""
-                      :next ""
-                      :prev ""}))
+(defonce app-state (atom {:form-url ""
+                          :instance ""
+                          :first ""
+                          :next ""
+                          :prev ""}))
 
 (def cors-proxy-domain "cors-anywhere.glitch.me")
 (def cors-proxy-url (clojure.string/join (list "https://" cors-proxy-domain "/")))
@@ -28,10 +29,12 @@
 
 (defn toot [text user date link]
   (gdom/createDom gdom/TagName.DIV "toot"
-                  (gdom/createDom gdom/TagName.SPAN "username" user)
-                  (gdom/createDom gdom/TagName.A (clj->js {:href link :target "_blank" :rel "noopener"})
-                                  (gdom/createDom gdom/TagName.SPAN "date" date))
-                  (gdom/safeHtmlToNode (.sanitize sanitizer text))))
+                  (gdom/createDom gdom/TagName.ASIDE "meta"
+                                  (gdom/createDom gdom/TagName.SPAN "username" user)
+                                  (gdom/createDom gdom/TagName.A (clj->js {:href link :target "_blank" :rel "noopener" :class "date right"})
+                                                  (gdom/createDom gdom/TagName.SPAN nil date)))
+                  (gdom/createDom gdom/TagName.DIV "content"
+                                  (gdom/safeHtmlToNode (.sanitize sanitizer text)))))
 
 (em/defaction add-toot [toot-data]
   "#toots" (ef/append (let [obj (get toot-data "object")]
@@ -41,7 +44,11 @@
                           (get obj "published")
                           (get obj "url")))))
 
+(em/defaction clear-page []
+  "#toots *" (ef/remove-node))
+
 (defn display-page [page]
+  (clear-page)
   (doseq [toot-data (get page "orderedItems")]
     (add-toot toot-data)))
 
@@ -77,13 +84,19 @@
                                       (do
                                         (get-page (:first %4) display-page) ; FIXME
                                         (remove-watch app-state :firstwatch))))
+  (swap! app-state update-in [:form-url]
+         return-second-arg url)
   (swap! app-state update-in [:instance]
          return-second-arg (nth (re-find #"https://([^/]+)" url) 1))
   (get-user-info url #(swap! app-state update-in [:first] return-second-arg (get %1 "first"))))
 
 ; misc
 (defn ^:after-load on-reload []
-  (println "reloaded"))
+  (let [url (:form-url @app-state)]
+    (if-not (clojure.string/blank? url)
+      (do
+        (print "loading" url)
+        (handle-form-url url)))))
 
 ; main
 (em/defaction setup []
