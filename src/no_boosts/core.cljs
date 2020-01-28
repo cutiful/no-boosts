@@ -49,7 +49,10 @@
 (defn display-page [page]
   (clear-page)
   (doseq [toot-data (get page "orderedItems")]
-    (add-toot toot-data)))
+    (case (get toot-data "type")
+      "Create" (add-toot toot-data)
+      "Announce" (print (get toot-data "object") "is a boost")
+      "default")))
 
 ; ajax
 (defn get-user-outbox [url handler]
@@ -69,8 +72,10 @@
       (clojure.string/replace-first url cors-proxy-domain instance)))
 
 (defn get-page-handler [page handler]
-  (swap! app-state update-in [:prev] return-second-arg (fix-url (get page "prev") (:instance app-state)))
-  (swap! app-state update-in [:next] return-second-arg (fix-url (get page "next") (:instance app-state)))
+  (if-not (clojure.string/blank? (get page "prev"))
+    (swap! app-state update-in [:prev] return-second-arg (fix-url (get page "prev") (:instance app-state))))
+  (if-not (clojure.string/blank? (get page "next"))
+    (swap! app-state update-in [:next] return-second-arg (fix-url (get page "next") (:instance app-state))))
   (handler page))
 
 (defn get-page [url handler]
