@@ -8,8 +8,7 @@
     [enfocus.events :as ev])
   (:require-macros [enfocus.macros :as em]))
 
-(defonce app-state (atom {:form-url ""
-                          :instance ""
+(defonce app-state (atom {:instance ""
                           :first ""
                           :next ""
                           :prev ""}))
@@ -30,7 +29,7 @@
 (defn toot [text user date link]
   (gdom/createDom gdom/TagName.DIV "toot"
                   (gdom/createDom gdom/TagName.ASIDE "meta"
-                                  (gdom/createDom gdom/TagName.SPAN "username" user)
+                                  (gdom/createDom gdom/TagName.SPAN "user" user)
                                   (gdom/createDom gdom/TagName.A (clj->js {:href link :target "_blank" :rel "noopener" :class "date right"})
                                                   (gdom/createDom gdom/TagName.SPAN nil date)))
                   (gdom/createDom gdom/TagName.DIV "content"
@@ -82,21 +81,19 @@
 (defn handle-form-url [url]
   (add-watch app-state :firstwatch #(if (not= (:first %3) (:first %4))
                                       (do
-                                        (get-page (:first %4) display-page) ; FIXME
+                                        (get-page (:first %4) display-page)
                                         (remove-watch app-state :firstwatch))))
-  (swap! app-state update-in [:form-url]
-         return-second-arg url)
   (swap! app-state update-in [:instance]
          return-second-arg (nth (re-find #"https://([^/]+)" url) 1))
   (get-user-info url #(swap! app-state update-in [:first] return-second-arg (get %1 "first"))))
 
 ; misc
 (defn ^:after-load on-reload []
-  (let [url (:form-url @app-state)]
+  (let [url (:first @app-state)]
     (if-not (clojure.string/blank? url)
       (do
         (print "loading" url)
-        (handle-form-url url)))))
+        (get-page url display-page)))))
 
 ; main
 (em/defaction setup []
@@ -104,8 +101,7 @@
                                     (.preventDefault %1) 
                                     (handle-form-url (:url values)))))
 
-(if (= (.-readyState js/document) "loading")
+; init
+(defonce on-startup (if (= (.-readyState js/document) "loading")
   (.addEventListener js/document "DOMContentLoaded" setup)
-  (setup))
-
-; (add-watch app-state :watch #(println %4))
+  (setup)))
