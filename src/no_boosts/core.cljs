@@ -68,14 +68,14 @@
 
 (defn fix-url [url instance]
   (if (clojure.string/includes? url instance)
-      (url)
+      url
       (clojure.string/replace-first url cors-proxy-domain instance)))
 
 (defn get-page-handler [page handler]
   (if-not (clojure.string/blank? (get page "prev"))
-    (swap! app-state update-in [:prev] return-second-arg (fix-url (get page "prev") (:instance app-state))))
+    (swap! app-state update-in [:prev] return-second-arg (fix-url (get page "prev") (:instance @app-state))))
   (if-not (clojure.string/blank? (get page "next"))
-    (swap! app-state update-in [:next] return-second-arg (fix-url (get page "next") (:instance app-state))))
+    (swap! app-state update-in [:next] return-second-arg (fix-url (get page "next") (:instance @app-state))))
   (handler page))
 
 (defn get-page [url handler]
@@ -90,6 +90,14 @@
                         (swap! app-state update-in [:first] return-second-arg (get %1 "first"))
                         (get-page (get %1 "first") display-page))))
 
+(defn prev-page [e]
+  (.preventDefault e)
+  (get-page (:prev @app-state) display-page))
+
+(defn next-page [e]
+  (.preventDefault e)
+  (get-page (:next @app-state) display-page))
+
 ; misc
 (defn ^:after-load on-reload []
   (let [url (:first @app-state)]
@@ -99,10 +107,12 @@
         (get-page url display-page)))))
 
 ; main
-(em/defaction setup []
-  "#instance" (ev/listen :submit #(let [values (ef/from "#instance" (ef/read-form))]
+(defn setup []
+  (ef/at "#instance" (ev/listen :submit #(let [values (ef/from "#instance" (ef/read-form))]
                                     (.preventDefault %1) 
                                     (handle-form-url (:url values)))))
+  (ef/at "#prev" (ev/listen :click prev-page))
+  (ef/at "#next" (ev/listen :click next-page)))
 
 ; init
 (defonce on-startup (if (= (.-readyState js/document) "loading")
