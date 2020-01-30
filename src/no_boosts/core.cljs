@@ -9,6 +9,7 @@
   (:require-macros [enfocus.macros :as em]))
 
 (defonce app-state (atom {:instance ""
+                          :number 0
                           :first ""
                           :next ""
                           :prev ""}))
@@ -46,8 +47,19 @@
 (em/defaction clear-page []
   "#toots *" (ef/remove-node))
 
+(defn update-button-visibility []
+  (letfn [(update [n] (if (clojure.string/blank? (get @app-state (keyword n)))
+                   (ef/at (clojure.string/join (list "#" n)) (ef/set-style :visibility "hidden"))
+                   (ef/at (clojure.string/join (list "#" n)) (ef/set-style :visibility "visible"))))]
+    (update "prev")
+    (update "next"))
+
+  (if (= (:number @app-state) 0)
+    (ef/at "#prev" (ef/set-style :visibility "hidden"))))
+
 (defn display-page [page]
   (clear-page)
+  (update-button-visibility)
   (doseq [toot-data (get page "orderedItems")]
     (case (get toot-data "type")
       "Create" (add-toot toot-data)
@@ -73,9 +85,11 @@
 
 (defn get-page-handler [page handler]
   (if-not (clojure.string/blank? (get page "prev"))
-    (swap! app-state update-in [:prev] return-second-arg (fix-url (get page "prev") (:instance @app-state))))
+    (swap! app-state update-in [:prev] return-second-arg (fix-url (get page "prev") (:instance @app-state)))
+    (swap! app-state update-in [:prev] return-second-arg ""))
   (if-not (clojure.string/blank? (get page "next"))
-    (swap! app-state update-in [:next] return-second-arg (fix-url (get page "next") (:instance @app-state))))
+    (swap! app-state update-in [:next] return-second-arg (fix-url (get page "next") (:instance @app-state)))
+    (swap! app-state update-in [:next] return-second-arg ""))
   (handler page))
 
 (defn get-page [url handler]
@@ -86,17 +100,21 @@
 (defn handle-form-url [url]
   (swap! app-state update-in [:instance]
          return-second-arg (nth (re-find #"https://([^/]+)" url) 1))
+  (swap! app-state update-in [:number]
+         return-second-arg 0)
   (get-user-info url #(do
                         (swap! app-state update-in [:first] return-second-arg (get %1 "first"))
                         (get-page (get %1 "first") display-page))))
 
 (defn prev-page [e]
   (.preventDefault e)
-  (get-page (:prev @app-state) display-page))
+  (get-page (:prev @app-state) display-page)
+  (swap! app-state update-in [:number] dec))
 
 (defn next-page [e]
   (.preventDefault e)
-  (get-page (:next @app-state) display-page))
+  (get-page (:next @app-state) display-page)
+  (swap! app-state update-in [:number] inc))
 
 ; misc
 (defn ^:after-load on-reload []
