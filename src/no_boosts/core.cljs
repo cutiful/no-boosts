@@ -68,14 +68,14 @@
 
 ; ajax
 (defn get-user-outbox [url handler]
-  (GET url {:response-format :json
+  (GET (make-cors-url url) {:response-format :json
             :handler #(handler %1)}))
 
 (defn get-user-info [url handler]
-  (GET url {:response-format :json
+  (GET (make-cors-url url) {:response-format :json
             :headers {:accept "application/activity+json"}
             :handler #(get-user-outbox
-                        (make-cors-url (get %1 "outbox"))
+                        (get %1 "outbox")
                         handler)}))
 
 (defn fix-url [url instance]
