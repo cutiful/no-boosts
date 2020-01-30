@@ -49,13 +49,13 @@
 
 (defn update-button-visibility []
   (letfn [(update [n] (if (clojure.string/blank? (get @app-state (keyword n)))
-                   (ef/at (clojure.string/join (list "#" n)) (ef/set-style :visibility "hidden"))
-                   (ef/at (clojure.string/join (list "#" n)) (ef/set-style :visibility "visible"))))]
+                   (ef/at (clojure.string/join (list "#" n)) (ef/set-attr :disabled "disabled"))
+                   (ef/at (clojure.string/join (list "#" n)) (ef/remove-attr :disabled))))]
     (update "prev")
     (update "next"))
 
   (if (= (:number @app-state) 0)
-    (ef/at "#prev" (ef/set-style :visibility "hidden"))))
+    (ef/at "#prev" (ef/set-attr :disabled "disabled"))))
 
 (defn display-page [page]
   (clear-page)
