@@ -48,14 +48,13 @@
   "#toots *" (ef/remove-node))
 
 (defn update-button-visibility []
-  (letfn [(update [n] (if (clojure.string/blank? (get @app-state (keyword n)))
-                   (ef/at (clojure.string/join (list "#" n)) (ef/set-attr :disabled "disabled"))
-                   (ef/at (clojure.string/join (list "#" n)) (ef/remove-attr :disabled))))]
-    (update "prev")
-    (update "next"))
+  (if (clojure.string/blank? (:next @app-state))
+                   (ef/at "#next" (ef/set-attr :disabled "disabled"))
+                   (ef/at "#next" (ef/remove-attr :disabled)))
 
   (if (= (:number @app-state) 0)
-    (ef/at "#prev" (ef/set-attr :disabled "disabled"))))
+    (ef/at "#prev" (ef/set-attr :disabled "disabled"))
+    (ef/at "#prev" (ef/remove-attr :disabled))))
 
 (defn display-page [page]
   (clear-page)
