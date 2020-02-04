@@ -9,10 +9,8 @@
   (:require-macros [enfocus.macros :as em]))
 
 (defonce app-state (atom {:instance ""
-                          :number 0
                           :first ""
-                          :next ""
-                          :prev ""}))
+                          :next ""}))
 
 (def cors-proxy-domain "cors-anywhere.glitch.me")
 (def cors-proxy-url (clojure.string/join (list "https://" cors-proxy-domain "/")))
@@ -50,20 +48,18 @@
 (defn update-button-visibility []
   (if (clojure.string/blank? (:next @app-state))
                    (ef/at "#next" (ef/set-attr :disabled "disabled"))
-                   (ef/at "#next" (ef/remove-attr :disabled)))
+                   (ef/at "#next" (ef/remove-attr :disabled))))
 
-  (if (= (:number @app-state) 0)
-    (ef/at "#prev" (ef/set-attr :disabled "disabled"))
-    (ef/at "#prev" (ef/remove-attr :disabled))))
+(defn add-toots [toots]
+  (doseq [toot toots]
+    (add-toot toot)))
 
-(defn display-page [page]
-  (clear-page)
+(defn filter-toots [items]
+  (filter #(= (get %1 "type") "Create") items))
+
+(defn add-page [page]
   (update-button-visibility)
-  (doseq [toot-data (get page "orderedItems")]
-    (case (get toot-data "type")
-      "Create" (add-toot toot-data)
-      "Announce" (print (get toot-data "object") "is a boost")
-      "default")))
+  (add-toots (filter-toots (get page "orderedItems"))))
 
 ; ajax
 (defn get-user-outbox [url handler]
@@ -83,9 +79,6 @@
       (clojure.string/replace-first url cors-proxy-domain instance)))
 
 (defn get-page-handler [page handler]
-  (if-not (clojure.string/blank? (get page "prev"))
-    (swap! app-state update-in [:prev] return-second-arg (fix-url (get page "prev") (:instance @app-state)))
-    (swap! app-state update-in [:prev] return-second-arg ""))
   (if-not (clojure.string/blank? (get page "next"))
     (swap! app-state update-in [:next] return-second-arg (fix-url (get page "next") (:instance @app-state)))
     (swap! app-state update-in [:next] return-second-arg ""))
@@ -103,17 +96,11 @@
          return-second-arg 0)
   (get-user-info url #(do
                         (swap! app-state update-in [:first] return-second-arg (get %1 "first"))
-                        (get-page (get %1 "first") display-page))))
-
-(defn prev-page [e]
-  (.preventDefault e)
-  (get-page (:prev @app-state) display-page)
-  (swap! app-state update-in [:number] dec))
+                        (get-page (get %1 "first") add-page))))
 
 (defn next-page [e]
   (.preventDefault e)
-  (get-page (:next @app-state) display-page)
-  (swap! app-state update-in [:number] inc))
+  (get-page (:next @app-state) add-page))
 
 ; misc
 (defn ^:after-load on-reload []
@@ -121,14 +108,13 @@
     (if-not (clojure.string/blank? url)
       (do
         (print "loading" url)
-        (get-page url display-page)))))
+        (get-page url add-page)))))
 
 ; main
 (defn setup []
   (ef/at "#instance" (ev/listen :submit #(let [values (ef/from "#instance" (ef/read-form))]
                                     (.preventDefault %1) 
                                     (handle-form-url (:url values)))))
-  (ef/at "#prev" (ev/listen :click prev-page))
   (ef/at "#next" (ev/listen :click next-page)))
 
 ; init

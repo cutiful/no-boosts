@@ -85,10 +85,12 @@ html {
   margin: 20px 0;
 }
 
-nav {
-  margin: 20px 0;
-}
-
 #toots .toot:first-child {
   border-top: solid 1px #4e2d50;
+}
+
+#next {
+  display: block;
+  margin: auto;
+  margin-top: 20px;
 }
