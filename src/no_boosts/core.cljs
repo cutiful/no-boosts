@@ -111,11 +111,15 @@
                                                      new-toots) ; else all are new
                                                    (if (nil? s) '() s))] ; '() on first iteration, s after
 
-                                   (if (< (count all-toots) number)
+                                   (update-state-page page)
+
+                                   (if (and (< (count all-toots) number) (not (clojure.string/blank? (:next @app-state))))
                                      (load-new-toots number handler all-toots)
                                      (do 
-                                       (swap! app-state update-in [:taken] return-second-arg (- number (count s)))
-                                       (update-state-page page)
+                                       ; use 0 if there was no next,
+                                       ; number of new toots to add to s to make (count s) = number otherwise
+                                       (swap! app-state update-in [:taken] return-second-arg
+                                              (max (- number (count s)) 0))
                                        (handler (take number all-toots))))))))
 
 (defn next-page [e]
