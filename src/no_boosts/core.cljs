@@ -101,26 +101,21 @@
                                                      (update-state-page page)
                                                      (add-page page))))))
 
-(defn load-new-toots [number handler & [s]] ; TODO: make a version w/o side effects
-  (get-page (:next @app-state) (fn [page]
-                                 (let [activities (get page "orderedItems")
-                                       new-toots (filter-toots activities) ; only Create activities
-                                       all-toots (concat
-                                                   (if (nil? s) ; if first iteration, then
-                                                     (nthrest new-toots (:taken @app-state)) ; only take toots that haven't been taken
-                                                     new-toots) ; else all are new
-                                                   (if (nil? s) '() s))] ; '() on first iteration, s after
+(defn load-new-toots [url number taken handler & [s]]
+  "Returns a seq of toots, next page url and the number of toots taken from it."
+  (get-page url (fn [page]
+                  (let [next-url (get page "next")
+                        activities (get page "orderedItems")
+                        new-toots (filter-toots activities) ; only Create activities
+                        all-toots (concat
+                                    (if (nil? s) '() s) ; '() on first iteration, s after
+                                    (nthrest new-toots taken))]
 
-                                   (update-state-page page)
-
-                                   (if (and (< (count all-toots) number) (not (clojure.string/blank? (:next @app-state))))
-                                     (load-new-toots number handler all-toots)
-                                     (do 
-                                       ; use 0 if there was no next,
-                                       ; number of new toots to add to s to make (count s) = number otherwise
-                                       (swap! app-state update-in [:taken] return-second-arg
-                                              (max (- number (count s)) 0))
-                                       (handler (take number all-toots))))))))
+                    (if (and (< (count all-toots) number) (not (clojure.string/blank? next-url)))
+                      (load-new-toots next-url number 0 handler all-toots)
+                      ; for taken: use 0 if there was no next, number of new
+                      ; toots to add to s to make (count s) = number (or all-toots if it's less) otherwise
+                      (handler (take number all-toots) next-url (max (- (min number (count all-toots)) (count s)) 0))))))) ; FIXME next-url is blank even if has more toots
 
 (defn next-page [e]
   (.preventDefault e)
