@@ -15,6 +15,7 @@
 
 (def cors-proxy-domain "cors-anywhere.glitch.me")
 (def cors-proxy-url (clojure.string/join (list "https://" cors-proxy-domain "/")))
+(def toots-per-page 20)
 
 ; pure
 (defn make-cors-url [url]
@@ -55,12 +56,12 @@
   (doseq [toot toots]
     (add-toot toot)))
 
+(defn add-update-toots [toots]
+  (update-button-visibility)
+  (add-toots toots))
+
 (defn filter-toots [items]
   (filter #(= (get %1 "type") "Create") items))
-
-(defn add-page [page]
-  (update-button-visibility)
-  (add-toots (filter-toots (get page "orderedItems"))))
 
 ; ajax
 (defn get-user-outbox [url handler]
@@ -79,27 +80,10 @@
       url
       (clojure.string/replace-first url cors-proxy-domain instance)))
 
-(defn update-state-page [page]
-  (if-not (clojure.string/blank? (get page "next"))
-    (swap! app-state update-in [:next] return-second-arg (fix-url (get page "next") (:instance @app-state)))
-    (swap! app-state update-in [:next] return-second-arg "")))
-
 (defn get-page [url handler]
   (GET (make-cors-url (fix-url url (:instance @app-state)))
        {:response-format :json
         :handler handler}))
-
-(defn handle-form-url [url]
-  (swap! app-state update-in [:instance]
-         return-second-arg (nth (re-find #"https://([^/]+)" url) 1))
-  (swap! app-state update-in [:number]
-         return-second-arg 0)
-  (get-user-info url #(do
-                        (clear-page)
-                        (swap! app-state update-in [:first] return-second-arg (get %1 "first"))
-                        (get-page (get %1 "first") (fn [page]
-                                                     (update-state-page page)
-                                                     (add-page page))))))
 
 (defn load-toots [url number taken handler & [s]]
   "Loads `number` new toots starting from `url`, filtering boosts and other
@@ -145,11 +129,20 @@
       (swap! app-state update-in [:taken] return-second-arg taken)
       (handler toots))))
 
+(defn handle-form-url [url]
+  (swap! app-state update-in [:instance]
+         return-second-arg (nth (re-find #"https://([^/]+)" url) 1))
+  (swap! app-state update-in [:number]
+         return-second-arg 0)
+  (get-user-info url #(do
+                        (clear-page)
+                        (swap! app-state update-in [:first] return-second-arg (get %1 "first"))
+                        (swap! app-state update-in [:next] return-second-arg (get %1 "first"))
+                        (load-new-toots toots-per-page add-update-toots))))
+
 (defn next-page [e]
   (.preventDefault e)
-  (get-page (:next @app-state) (fn [page]
-                                 (update-state-page page)
-                                 (add-page page))))
+  (load-new-toots toots-per-page add-update-toots))
 
 ; misc
 (defn ^:after-load on-reload []
@@ -158,9 +151,9 @@
       (do
         (print "loading" url)
         (clear-page)
-        (get-page url (fn [page]
-                        (update-state-page page)
-                        (add-page page)))))))
+        (swap! app-state update-in [:taken] return-second-arg 0)
+        (swap! app-state update-in [:next] return-second-arg url)
+        (load-new-toots toots-per-page add-update-toots)))))
 
 ; main
 (defn setup []
