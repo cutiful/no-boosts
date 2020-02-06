@@ -95,6 +95,7 @@
   (swap! app-state update-in [:number]
          return-second-arg 0)
   (get-user-info url #(do
+                        (clear-page)
                         (swap! app-state update-in [:first] return-second-arg (get %1 "first"))
                         (get-page (get %1 "first") add-page))))
 
@@ -108,6 +109,7 @@
     (if-not (clojure.string/blank? url)
       (do
         (print "loading" url)
+        (clear-page)
         (get-page url add-page)))))
 
 ; main
@@ -118,6 +120,8 @@
   (ef/at "#next" (ev/listen :click next-page)))
 
 ; init
-(defonce on-startup (if (= (.-readyState js/document) "loading")
-  (.addEventListener js/document "DOMContentLoaded" setup)
-  (setup)))
+(defonce on-startup (do
+                      (if (= (.-readyState js/document) "loading")
+                        (.addEventListener js/document "DOMContentLoaded" setup)
+                        (setup))
+                      true))
