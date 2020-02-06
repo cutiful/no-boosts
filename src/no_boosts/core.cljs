@@ -111,11 +111,16 @@
                                     (if (nil? s) '() s) ; '() on first iteration, s after
                                     (nthrest new-toots taken))]
 
-                    (if (and (< (count all-toots) number) (not (clojure.string/blank? next-url)))
-                      (load-new-toots next-url number 0 handler all-toots)
-                      ; for taken: use 0 if there was no next, number of new
-                      ; toots to add to s to make (count s) = number (or all-toots if it's less) otherwise
-                      (handler (take number all-toots) next-url (max (- (min number (count all-toots)) (count s)) 0))))))) ; FIXME next-url is blank even if has more toots
+                    (if-not (clojure.string/blank? next-url)
+                      (if (< (count all-toots) number)
+                        (load-new-toots next-url number 0 handler all-toots)
+                        (let [new-taken (- number (count s))]
+                          (if (> new-taken 0)
+                            (handler (take number all-toots) url new-taken)
+                            (handler (take number all-toots) next-url 0))))
+                      (if (> (count all-toots) number)
+                        (handler (take number all-toots) url (- number (count s)))
+                        (handler all-toots "" 0)))))))
 
 (defn next-page [e]
   (.preventDefault e)
