@@ -78,16 +78,15 @@
       url
       (clojure.string/replace-first url cors-proxy-domain instance)))
 
-(defn get-page-handler [page handler]
+(defn update-state-page [page]
   (if-not (clojure.string/blank? (get page "next"))
     (swap! app-state update-in [:next] return-second-arg (fix-url (get page "next") (:instance @app-state)))
-    (swap! app-state update-in [:next] return-second-arg ""))
-  (handler page))
+    (swap! app-state update-in [:next] return-second-arg "")))
 
 (defn get-page [url handler]
   (GET (make-cors-url (fix-url url (:instance @app-state)))
        {:response-format :json
-        :handler #(get-page-handler %1 handler)}))
+        :handler handler}))
 
 (defn handle-form-url [url]
   (swap! app-state update-in [:instance]
@@ -97,11 +96,16 @@
   (get-user-info url #(do
                         (clear-page)
                         (swap! app-state update-in [:first] return-second-arg (get %1 "first"))
-                        (get-page (get %1 "first") add-page))))
+                        (get-page (get %1 "first") (fn [page]
+                                                     (update-state-page page)
+                                                     (add-page page))))))
+
 
 (defn next-page [e]
   (.preventDefault e)
-  (get-page (:next @app-state) add-page))
+  (get-page (:next @app-state) (fn [page]
+                                 (update-state-page page)
+                                 (add-page page))))
 
 ; misc
 (defn ^:after-load on-reload []
@@ -110,7 +114,9 @@
       (do
         (print "loading" url)
         (clear-page)
-        (get-page url add-page)))))
+        (get-page url (fn [page]
+                        (update-state-page page)
+                        (add-page page)))))))
 
 ; main
 (defn setup []
