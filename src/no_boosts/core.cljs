@@ -10,7 +10,8 @@
 
 (defonce app-state (atom {:instance ""
                           :first ""
-                          :next ""}))
+                          :next ""
+                          :taken 0}))
 
 (def cors-proxy-domain "cors-anywhere.glitch.me")
 (def cors-proxy-url (clojure.string/join (list "https://" cors-proxy-domain "/")))
@@ -100,6 +101,22 @@
                                                      (update-state-page page)
                                                      (add-page page))))))
 
+(defn load-new-toots [number handler & [s]] ; TODO: make a version w/o side effects
+  (get-page (:next @app-state) (fn [page]
+                                 (let [activities (get page "orderedItems")
+                                       new-toots (filter-toots activities) ; only Create activities
+                                       all-toots (concat
+                                                   (if (nil? s) ; if first iteration, then
+                                                     (nthrest new-toots (:taken @app-state)) ; only take toots that haven't been taken
+                                                     new-toots) ; else all are new
+                                                   (if (nil? s) '() s))] ; '() on first iteration, s after
+
+                                   (if (< (count all-toots) number)
+                                     (load-new-toots number handler all-toots)
+                                     (do 
+                                       (swap! app-state update-in [:taken] return-second-arg (- number (count s)))
+                                       (update-state-page page)
+                                       (handler (take number all-toots))))))))
 
 (defn next-page [e]
   (.preventDefault e)
