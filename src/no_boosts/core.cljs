@@ -101,7 +101,7 @@
                                                      (update-state-page page)
                                                      (add-page page))))))
 
-(defn load-new-toots [url number taken handler & [s]]
+(defn load-toots [url number taken handler & [s]]
   "Loads `number` new toots starting from `url`, filtering boosts and other
   unneeded stuff. `taken` is how many toots from the first page to discard.
   Returns a seq of toots, next page url and the number of toots taken from it."
@@ -116,7 +116,7 @@
                     ; If we need to load new toots and it's possible,
                     (if (and (not (clojure.string/blank? next-url)) (< (count all-toots) number))
                       ; do it.
-                      (load-new-toots next-url number 0 handler all-toots)
+                      (load-toots next-url number 0 handler all-toots)
                       ; Otherwise, count how many toots are we gonna take from the page.
                       ; If we already took some from here, add it.
                       (let [new-taken (+ (- (min number (count all-toots)) (count s)) taken)]
@@ -132,6 +132,18 @@
                           ; will be all-toots - s = new-toots. We return the
                           ; next URL which is nil, zero toots taken from there.
                           (handler all-toots next-url 0))))))))
+
+(defn load-new-toots [number handler]
+  "`load-toots`, but with side effects. Takes URLs from @app-state and saves new
+  ones as well as `taken` there."
+  (load-toots
+    (:next @app-state)
+    number
+    (:taken @app-state)
+    (fn [toots url taken]
+      (swap! app-state update-in [:next] return-second-arg url)
+      (swap! app-state update-in [:taken] return-second-arg taken)
+      (handler toots))))
 
 (defn next-page [e]
   (.preventDefault e)
