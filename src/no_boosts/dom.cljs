@@ -9,6 +9,12 @@
 
 (def sanitizer (HtmlSanitizer.))
 
+(defn make-target-blank [dom]
+  (doseq [node (gdom/findNodes dom (fn [n] (= (.-tagName n) "A")))]
+    (set! (.-rel node) "noopener")
+    (set! (.-target node) "_blank"))
+  dom)
+
 (defn toot [text user date link]
   (gdom/createDom gdom/TagName.DIV "toot"
                   (gdom/createDom gdom/TagName.ASIDE "meta"
@@ -16,7 +22,7 @@
                                   (gdom/createDom gdom/TagName.A (clj->js {:href link :target "_blank" :rel "noopener" :class "date right"})
                                                   (gdom/createDom gdom/TagName.SPAN nil date)))
                   (gdom/createDom gdom/TagName.DIV "content"
-                                  (gdom/safeHtmlToNode (.sanitize sanitizer text)))))
+                                  (make-target-blank (gdom/safeHtmlToNode (.sanitize sanitizer text))))))
 
 (em/defaction add-toot [toot-data]
   "#toots" (ef/append (let [obj (get toot-data "object")]
