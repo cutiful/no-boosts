@@ -14,7 +14,7 @@
   :source-paths ["src"]
 
   :aliases {"start" ["trampoline" "run" "-m" "figwheel.main" "-b" "dev" "-r"]
-            "build" ["run" "-m" "figwheel.main" "-O" "advanced" "-bo" "prod"]
+            "build" ["run" "-m" "figwheel.main" "-bo" "prod"]
             "test"  ["run" "-m" "figwheel.main" "-co" "test.cljs.edn" "-m" "no-boosts.test-runner"]}
 
   :profiles {:dev {:dependencies [[com.bhauman/figwheel-main "0.2.3"]
