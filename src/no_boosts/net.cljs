@@ -1,8 +1,7 @@
 (ns no-boosts.net
   (:require
     [clojure.string]
-    [ajax.core :refer [GET POST]]
-    ))
+    [ajax.core :refer [GET POST]]))
 
 (def cors-proxy-domain "cors-anywhere.glitch.me")
 (def cors-proxy-url (clojure.string/join (list "https://" cors-proxy-domain "/")))
