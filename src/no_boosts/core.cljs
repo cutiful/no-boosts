@@ -54,15 +54,15 @@
       (handler toots))))
 
 (defn handle-form-url [url show-replies]
-  (reset-state)
-  (swap! app-state update-in [:instance]
-         return-second-arg (nth (re-find #"https://([^/]+)" url) 1))
-  (swap! app-state update-in [:show-replies]
-         return-second-arg show-replies)
-  (get-user-info url #(do
+  (get-user-info url (fn [user-info]
                         (clear-page)
-                        (swap! app-state update-in [:first] return-second-arg (get %1 "first"))
-                        (swap! app-state update-in [:next] return-second-arg (get %1 "first"))
+                        (reset-state)
+                        (swap! app-state update-in [:instance]
+                               return-second-arg (nth (re-find #"https://([^/]+)" url) 1))
+                        (swap! app-state update-in [:show-replies]
+                               return-second-arg show-replies)
+                        (swap! app-state update-in [:first] return-second-arg (get user-info "first"))
+                        (swap! app-state update-in [:next] return-second-arg (get user-info "first"))
                         (load-new-toots toots-per-page (needed-filter-func) add-update-toots))))
 
 (defn next-page [e]

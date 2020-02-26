@@ -6,19 +6,24 @@
 (def cors-proxy-domain "cors-anywhere.glitch.me")
 (def cors-proxy-url (clojure.string/join (list "https://" cors-proxy-domain "/")))
 
+(defn error [e]
+  (js/alert (clojure.string/join (list "Error " (:status e) "!"))))
+
 (defn make-cors-url [url]
   (clojure.string/join (list cors-proxy-url url)))
 
 (defn get-user-outbox [url handler]
   (GET (make-cors-url url) {:response-format :json
-            :handler #(handler %1)}))
+            :handler #(handler %1)
+            :error-handler error}))
 
 (defn get-user-info [url handler]
   (GET (make-cors-url url) {:response-format :json
             :headers {:accept "application/activity+json"}
             :handler #(get-user-outbox
                         (get %1 "outbox")
-                        handler)}))
+                        handler)
+            :error-handler error}))
 
 (defn fix-url [url instance]
   (if (clojure.string/includes? url instance)
@@ -28,7 +33,8 @@
 (defn get-page [instance url handler]
   (GET (make-cors-url (fix-url url instance))
        {:response-format :json
-        :handler handler}))
+        :handler handler
+        :error-handler error}))
 
 (defn load-toots [instance url number taken filter-fn handler & [s]]
   "Loads `number` new toots starting from `url`, filtering boosts and other
