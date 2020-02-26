@@ -33,7 +33,7 @@
                   (let [content
                         (gdom/createDom gdom/TagName.DIV "content"
                                         (make-target-blank (gdom/safeHtmlToNode (.sanitize sanitizer text))))]
-                    (if-not (nil? summary)
+                    (if-not (or (nil? summary) (= summary ""))
                       (gdom/createDom gdom/TagName.DETAILS nil
                                       (gdom/createDom gdom/TagName.SUMMARY (clj->js {:aria-label (clojure.string/join (list "cw: " summary))}) summary)
                                       content)
