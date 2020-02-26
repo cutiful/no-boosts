@@ -50,7 +50,7 @@
                           (render-custom-emoji (get obj "content") (get obj "tag"))
                           (get obj "attributedTo")
                           (get obj "published")
-                          (get obj "url")
+                          (or (get obj "url") (get obj "id"))
                           (get obj "summary")
                           (get obj "attachment")))))
 
