@@ -1,6 +1,6 @@
-(defproject no-boosts.core "0.1.0-SNAPSHOT"
-  :description "FIXME: write this!"
-  :url "http://example.com/FIXME"
+(defproject no-boosts.core "0.1.0"
+  :description "A tool to show a fediverse user's posts excluding boosts"
+  :url "https://no-boosts.glitch.me"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
@@ -13,12 +13,11 @@
 
   :source-paths ["src"]
 
-  :aliases {"fig"       ["trampoline" "run" "-m" "figwheel.main"]
-            "fig:build" ["trampoline" "run" "-m" "figwheel.main" "-b" "dev" "-r"]
-            "fig:min"   ["run" "-m" "figwheel.main" "-O" "advanced" "-bo" "dev"]
-            "fig:test"  ["run" "-m" "figwheel.main" "-co" "test.cljs.edn" "-m" "no-boosts.test-runner"]}
+  :aliases {"start" ["trampoline" "run" "-m" "figwheel.main" "-b" "dev" "-r"]
+            "build" ["run" "-m" "figwheel.main" "-O" "advanced" "-bo" "prod"]
+            "test"  ["run" "-m" "figwheel.main" "-co" "test.cljs.edn" "-m" "no-boosts.test-runner"]}
 
   :profiles {:dev {:dependencies [[com.bhauman/figwheel-main "0.2.3"]
-                                  [com.bhauman/rebel-readline-cljs "0.1.4"]]
-                   }})
+                                  [com.bhauman/rebel-readline-cljs "0.1.4"]]}
+             :prod {:dependencies [[com.bhauman/figwheel-main "0.2.3"]]}})
 
