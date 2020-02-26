@@ -1,5 +1,6 @@
 (ns no-boosts.dom
-  (:import goog.html.sanitizer.HtmlSanitizer)
+  (:import goog.html.sanitizer.HtmlSanitizer.Builder
+           goog.html.SafeUrl)
   (:require
     [clojure.string]
     [goog.dom :as gdom]
@@ -8,7 +9,13 @@
     [no-boosts.misc :refer [render-custom-emoji]])
   (:require-macros [enfocus.macros :as em]))
 
-(def sanitizer (HtmlSanitizer.))
+(def sanitizer-builder (Builder.))
+(.withCustomNetworkRequestUrlPolicy sanitizer-builder (fn [url options]
+                                                        (if (= (get (js->clj options) "tagName") "img")
+                                                          (.sanitize SafeUrl url)
+                                                          nil)))
+
+(def sanitizer (.build sanitizer-builder))
 
 (defn make-target-blank [dom]
   (doseq [node (gdom/findNodes dom (fn [n] (= (.-tagName n) "A")))]
