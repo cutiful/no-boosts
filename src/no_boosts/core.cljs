@@ -8,14 +8,18 @@
     [no-boosts.net :refer [load-toots get-user-info]]
     [no-boosts.misc :refer [filter-toots filter-toots-without-replies]]))
 
-(defonce app-state (atom {:instance ""
-                          :first ""
-                          :next ""
-                          :taken 0
-                          :locked false
-                          :show-replies true}))
-
 (def toots-per-page 20)
+(def default-state {:instance ""
+                   :first ""
+                   :next ""
+                   :taken 0
+                   :locked false
+                   :show-replies true})
+
+(defonce app-state (atom default-state))
+
+(defn reset-state []
+  (reset! app-state default-state))
 
 (defn return-second-arg [a b]
   b)
@@ -50,10 +54,9 @@
       (handler toots))))
 
 (defn handle-form-url [url show-replies]
+  (reset-state)
   (swap! app-state update-in [:instance]
          return-second-arg (nth (re-find #"https://([^/]+)" url) 1))
-  (swap! app-state update-in [:number]
-         return-second-arg 0)
   (swap! app-state update-in [:show-replies]
          return-second-arg show-replies)
   (get-user-info url #(do
