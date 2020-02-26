@@ -1,18 +1,10 @@
-html {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background: #1f1f1f;
-  color: #bcbcbc;
-}
-
 #app {
   max-width: 800px;
   margin: auto;
 }
 
 .toot {
-  border: solid 1px #4e2d50;
+  border: solid 1px black;
   border-top: none;
   padding: 6px;
   text-align: left;
@@ -34,11 +26,9 @@ html {
 }
 
 .toot .content a {
-  color: #b373b7;
 }
 
 .toot .content a:hover {
-  color: #b373b7;
   text-decoration: none;
 }
 
@@ -53,31 +43,26 @@ html {
 
 .link:hover {
   text-decoration: underline;
-  color: #5d3c5f;
 }
 
 .user {
-  color: #aa64af;
+  color: #666699;
   margin-right: 10px;
 }
 
 .username {
-  color: #5d3c5f;
 }
 
 .right {
-  color: #5d3c5f;
   float: right;
   font-size: 14px;
 }
 
 .date {
-  color: #5d3c5f;
   text-decoration: none;
 }
 
 .date:hover {
-  color: #b373b7;
   text-decoration: underline;
 }
 
@@ -86,7 +71,7 @@ html {
 }
 
 #toots .toot:first-child {
-  border-top: solid 1px #4e2d50;
+  border-top: solid 1px black;
 }
 
 #next {
