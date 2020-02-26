@@ -9,6 +9,25 @@
   </head>
   <body>
     <div id="app">
+      <h1>No boosts!</h1>
+      <details class="about">
+        <summary><span>What's this?</span></summary>
+        <p>
+        No boosts is an extremely simple web application that lets you see
+        the posts made by a fediverse user, excluding boosts. It can filter
+        toots without mentions and supports custom emoji.
+        </p>
+        <p>To use it, you need to enter the URL of a user's page (just open it
+        in a new tab and copy its location), it won't work with usernames.
+        </p>
+        <p>
+        <b>Why?</b> Sometimes you want to follow someone who boosts a lot of
+        others' posts. You can follow them and hide their boosts, but there's no
+        way to find out how will their timeline look before following them. Using
+        this tool, you can get a preview. (Of course, it doesn't include
+        followers-only toots, as those aren't accessible before following.)
+        </p>
+      </details>
       <form id="instance">
         <input type="text" name="url" placeholder="https://mas.to/@username">
         <input type="submit"><br>

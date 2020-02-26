@@ -89,3 +89,12 @@
   max-height: 28px;
   max-width: 28px;
 }
+
+.about {
+  max-width: 500px;
+}
+
+.about summary span {
+  text-decoration: underline;
+  cursor: help;
+}
