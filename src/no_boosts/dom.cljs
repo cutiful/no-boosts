@@ -14,6 +14,8 @@
                                                         (if (= (get (js->clj options) "tagName") "img")
                                                           (.sanitize SafeUrl url)
                                                           nil)))
+(.withCustomTokenPolicy sanitizer-builder (fn [token options]
+                                            (if (= token "emoji") token nil)))
 
 (def sanitizer (.build sanitizer-builder))
 

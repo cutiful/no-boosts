@@ -83,3 +83,9 @@
 .attachment {
   font-style: italic;
 }
+
+.emoji {
+  vertical-align: middle;
+  max-height: 28px;
+  max-width: 28px;
+}
