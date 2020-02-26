@@ -10,7 +10,8 @@
 (defonce app-state (atom {:instance ""
                           :first ""
                           :next ""
-                          :taken 0}))
+                          :taken 0
+                          :locked false}))
 
 (def toots-per-page 20)
 
@@ -23,6 +24,7 @@
                    (ef/at "#next" (ef/remove-attr :disabled))))
 
 (defn add-update-toots [toots]
+  (swap! app-state update-in [:locked] return-second-arg false)
   (update-button-visibility)
   (add-toots toots))
 
@@ -52,7 +54,9 @@
 
 (defn next-page [e]
   (.preventDefault e)
-  (load-new-toots toots-per-page add-update-toots))
+  (when-not (:locked @app-state)
+    (swap! app-state update-in [:locked] return-second-arg true)
+    (load-new-toots toots-per-page add-update-toots)))
 
 ; misc
 (defn ^:after-load on-reload []
