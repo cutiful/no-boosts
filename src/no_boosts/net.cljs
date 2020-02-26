@@ -2,7 +2,7 @@
   (:require
     [clojure.string]
     [ajax.core :refer [GET POST]]
-    [no-boosts.misc :refer [filter-toots]]))
+    ))
 
 (def cors-proxy-domain "cors-anywhere.glitch.me")
 (def cors-proxy-url (clojure.string/join (list "https://" cors-proxy-domain "/")))
@@ -31,14 +31,14 @@
        {:response-format :json
         :handler handler}))
 
-(defn load-toots [instance url number taken handler & [s]]
+(defn load-toots [instance url number taken filter-fn handler & [s]]
   "Loads `number` new toots starting from `url`, filtering boosts and other
   unneeded stuff. `taken` is how many toots from the first page to discard.
   Returns a seq of toots, next page url and the number of toots taken from it."
   (get-page instance url (fn [page]
                   (let [next-url (get page "next")
                         activities (get page "orderedItems")
-                        new-toots (filter-toots activities) ; only Create activities
+                        new-toots (filter-fn activities) ; only Create activities
                         all-toots (concat
                                     (if (nil? s) '() s) ; '() on first iteration, s after
                                     (nthrest new-toots taken))]
@@ -46,7 +46,7 @@
                     ; If we need to load new toots and it's possible,
                     (if (and (not (clojure.string/blank? next-url)) (< (count all-toots) number))
                       ; do it.
-                      (load-toots instance next-url number 0 handler all-toots)
+                      (load-toots instance next-url number 0 filter-fn handler all-toots)
                       ; Otherwise, count how many toots are we gonna take from the page.
                       ; If we already took some from here, add it.
                       (let [new-taken (+ (- (min number (count all-toots)) (count s)) taken)]
