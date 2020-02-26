@@ -13,7 +13,7 @@
                    :first ""
                    :next ""
                    :taken 0
-                   :locked false
+                   :locked true
                    :show-replies true})
 
 (defonce app-state (atom default-state))
