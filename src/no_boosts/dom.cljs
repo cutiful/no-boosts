@@ -4,7 +4,8 @@
     [clojure.string]
     [goog.dom :as gdom]
     [enfocus.core :as ef]
-    [enfocus.events :as ev])
+    [enfocus.events :as ev]
+    [no-boosts.misc :refer [render-custom-emoji]])
   (:require-macros [enfocus.macros :as em]))
 
 (def sanitizer (HtmlSanitizer.))
@@ -37,7 +38,7 @@
 (em/defaction add-toot [toot-data]
   "#toots" (ef/append (let [obj (get toot-data "object")]
                         (toot
-                          (get obj "content")
+                          (render-custom-emoji (get obj "content") (get obj "tag"))
                           (get obj "attributedTo")
                           (get obj "published")
                           (get obj "url")
