@@ -18,7 +18,6 @@
 (defn toot [text user date link]
   (gdom/createDom gdom/TagName.DIV "toot"
                   (gdom/createDom gdom/TagName.ASIDE "meta"
-                                  (gdom/createDom gdom/TagName.SPAN "user" user)
                                   (gdom/createDom gdom/TagName.A (clj->js {:href link :target "_blank" :rel "noopener" :class "date right"})
                                                   (gdom/createDom gdom/TagName.SPAN nil date)))
                   (gdom/createDom gdom/TagName.DIV "content"
