@@ -1,4 +1,0 @@
-^{:target-dir "resources"}
-{:main no-boosts.core
- :source-map "resources/public/cljs-out/prod-main.js.map"
- :optimizations :advanced}
