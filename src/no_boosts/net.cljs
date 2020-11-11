@@ -3,14 +3,13 @@
     [clojure.string]
     [ajax.core :refer [GET POST]]))
 
-(def cors-proxy-domain "cors-anywhere.glitch.me")
-(def cors-proxy-url (clojure.string/join (list "https://" cors-proxy-domain "/")))
+(def cors-proxy-url "https://jsonp.afeld.me/?url=")
 
 (defn error [e]
   (js/alert (clojure.string/join (list "Error " (:status e) "!"))))
 
 (defn make-cors-url [url]
-  (clojure.string/join (list cors-proxy-url url)))
+  (clojure.string/join (list cors-proxy-url (js/encodeURIComponent url))))
 
 (defn get-user-outbox [url handler]
   (GET (make-cors-url url) {:response-format :json
@@ -25,13 +24,8 @@
                         handler)
             :error-handler error}))
 
-(defn fix-url [url instance]
-  (if (clojure.string/includes? url instance)
-      url
-      (clojure.string/replace-first url cors-proxy-domain instance)))
-
 (defn get-page [instance url handler]
-  (GET (make-cors-url (fix-url url instance))
+  (GET (make-cors-url url)
        {:response-format :json
         :handler handler
         :error-handler error}))
