@@ -1,8 +1,8 @@
 (defproject no-boosts.core "0.1.0"
   :description "A tool to show a fediverse user's posts excluding boosts"
   :url "https://no-boosts.glitch.me"
-  :license {:name "Eclipse Public License"
-            :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :license {:name "Common Development and Distribution License 1.0"
+            :url "https://spdx.org/licenses/CDDL-1.0.html"}
 
   :min-lein-version "2.7.1"
 
