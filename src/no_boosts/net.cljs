@@ -3,13 +3,13 @@
     [clojure.string]
     [ajax.core :refer [GET POST]]))
 
-(def cors-proxy-url "https://jsonp.afeld.me/?url=")
+(def cors-proxy-url "https://wandering-rain-b066.purr.workers.dev/")
 
 (defn error [e]
   (js/alert (clojure.string/join (list "Error " (:status e) "!"))))
 
 (defn make-cors-url [url]
-  (clojure.string/join (list cors-proxy-url (js/encodeURIComponent url))))
+  (clojure.string/join (list cors-proxy-url url)))
 
 (defn get-user-outbox [url handler]
   (GET (make-cors-url url) {:response-format :json
