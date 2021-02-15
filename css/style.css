@@ -1,0 +1,101 @@
+#app {
+  max-width: 800px;
+  margin: auto;
+}
+
+.toot {
+  border: solid 1px black;
+  border-top: none;
+  padding: 6px;
+  text-align: left;
+}
+
+.toot .content {
+  margin: 0 10px 10px 10px;
+  font-size: 16px;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.toot .content p:first-child {
+  margin-top: 0;
+}
+
+.toot .content p:last-child {
+  margin-bottom: 0;
+}
+
+.toot .content a, .attachment a {
+}
+
+.toot .content a:hover, .attachment a:hover {
+  text-decoration: none;
+}
+
+.meta {
+  padding: 0 2px 0 6px;
+  margin-bottom: 5px;
+}
+
+.link {
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.user {
+  color: #666699;
+  margin-right: 10px;
+}
+
+.username {
+}
+
+.right {
+  float: right;
+  font-size: 14px;
+}
+
+.date {
+  text-decoration: none;
+}
+
+.date:hover {
+  text-decoration: underline;
+}
+
+#instance {
+  margin: 20px 0;
+}
+
+#toots .toot:first-child {
+  border-top: solid 1px black;
+}
+
+#next {
+  display: block;
+  margin: auto;
+  margin-top: 20px;
+}
+
+.attachment {
+  font-style: italic;
+  margin: 10px 10px 0 10px;
+}
+
+.emoji {
+  vertical-align: middle;
+  max-height: 28px;
+  max-width: 28px;
+}
+
+.about {
+  max-width: 500px;
+}
+
+.about summary span {
+  text-decoration: underline;
+  cursor: help;
+}
