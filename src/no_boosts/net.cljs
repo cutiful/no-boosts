@@ -3,7 +3,7 @@
     [clojure.string]
     [ajax.core :refer [GET POST]]))
 
-(def cors-proxy-url "https://wandering-rain-b066.purr.workers.dev/")
+(def cors-proxy-url "https://purple-pine-0cd4.purr.workers.dev/")
 
 (defn error [e]
   (js/alert (clojure.string/join (list "Error " (:status e) "!"))))
